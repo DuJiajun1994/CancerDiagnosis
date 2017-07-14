@@ -31,15 +31,21 @@ def train_model(model_name, data_name, train_iters, test_step, learning_rate, ba
         sess.run(saver.restore(sess, pretrain_model_path))
 
         print('Start training')
+        train_loss = 0.
+        train_accuracy = 0.
         for step in range(1, train_iters+1):
             images, labels = input_data.next_batch(batch_size, 'train')
-            train_loss, _, train_accuracy = sess.run([loss, optimizer, accuracy],
+            batch_loss, _, batch_accuracy = sess.run([loss, optimizer, accuracy],
                                                      feed_dict={x: images, y: labels})
+            train_loss += batch_loss
+            train_accuracy += batch_accuracy
 
             # Display training status
             if step % display_step == 0:
                 print("{} Iter {}: Training Loss = {:.4f}, Accuracy = {:.4f}"
-                      .format(datetime.now(), step, train_loss, train_accuracy))
+                      .format(datetime.now(), step, train_loss / display_step, train_accuracy / display_step))
+                train_loss = 0.
+                train_accuracy = 0.
 
             # Snapshot
             if step % snapshot_step == 0:
