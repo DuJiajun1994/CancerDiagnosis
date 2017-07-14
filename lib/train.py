@@ -13,15 +13,15 @@ def train_model(model_name, data_name, train_iters, test_step, learning_rate, ba
     model = get_model(model_name)
     input_data = DataProvider(data_name)
 
-    x = tf.placeholder(tf.float32, [batch_size, 224, 224, 3])
-    y = tf.placeholder(tf.float32, [batch_size, 2])
+    x = tf.placeholder(tf.float32, shape=[None, 224, 224, 3])  # images
+    y = tf.placeholder(tf.float32, shape=[None])  # labels: 0, not cancer; 1, has cancer
 
-    pred = model(x)
+    predict = model(x)
 
-    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=predict, labels=y))
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss)
-    correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+    correct_predict = tf.equal(tf.argmax(predict, 1), y)
+    accuracy = tf.reduce_mean(tf.cast(correct_predict, tf.float32))
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
@@ -32,32 +32,31 @@ def train_model(model_name, data_name, train_iters, test_step, learning_rate, ba
 
         print('Start training')
         for step in range(1, train_iters+1):
-            batch_xs, batch_ys = input_data.next_batch(batch_size, 'train')
-            sess.run(optimizer, feed_dict={x: batch_xs, y: batch_ys})
-
-            # Display testing status
-            if step % test_step == 0:
-                test_acc = 0.
-                test_count = 0
-                for _ in range(int(input_data.test_size / batch_size)):
-                    batch_tx, batch_ty = input_data.next_batch(batch_size, 'test')
-                    acc = sess.run(accuracy, feed_dict={x: batch_tx, y: batch_ty})
-                    test_acc += acc
-                    test_count += 1
-                test_acc /= test_count
-                print("{} Iter {}: Testing Accuracy = {:.4f}".format(datetime.now(), step, test_acc))
+            images, labels = input_data.next_batch(batch_size, 'train')
+            train_loss, _, train_accuracy = sess.run([loss, optimizer, accuracy],
+                                                     feed_dict={x: images, y: labels})
 
             # Display training status
             if step % display_step == 0:
-                acc = sess.run(accuracy, feed_dict={x: batch_xs, y: batch_ys})
-                batch_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys})
                 print("{} Iter {}: Training Loss = {:.4f}, Accuracy = {:.4f}"
-                      .format(datetime.now(), step, batch_loss, acc))
+                      .format(datetime.now(), step, train_loss, train_accuracy))
 
+            # Snapshot
             if step % snapshot_step == 0:
                 timestamp = time.strftime('%Y%m%d%H%M%S', time.localtime())
                 save_path = os.path.join('output',
                                          '{}_{}_{}.txt'.format(data_name, model_name, timestamp))
                 sess.run(saver.save(sess, save_path))
+
+            # Display testing status
+            if step % test_step == 0:
+                test_accuracy = 0.
+                test_num = int(input_data.test_size / batch_size)
+                for _ in range(test_num):
+                    images, labels = input_data.next_batch(batch_size, 'test')
+                    acc = sess.run(accuracy, feed_dict={x: images, y: labels})
+                    test_accuracy += acc
+                test_accuracy /= test_num
+                print("{} Iter {}: Testing Accuracy = {:.4f}".format(datetime.now(), step, test_accuracy))
 
         print('Finish!')
