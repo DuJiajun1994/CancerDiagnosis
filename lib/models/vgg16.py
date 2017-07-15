@@ -7,13 +7,13 @@ from tensorflow.contrib.layers.python.layers import layers as layers_lib
 
 
 def vgg16(inputs,
-          num_classes=1000,
+          num_classes=2,
           is_training=True,
           dropout_keep_prob=0.5):
     """Oxford Net VGG 16-Layers version D Example.
 
     Note: All the fully_connected layers have been transformed to conv2d layers.
-          To use in classification mode, resize input to 224x224.
+          Height and width must be divisible by 32.
 
     Args:
         inputs: a tensor of size [batch_size, height, width, channels].
@@ -23,8 +23,13 @@ def vgg16(inputs,
         layers during training.
 
     Returns:
-        the last op containing the log predictions and end_points dict.
+        the last op containing the log predictions.
     """
+    height = inputs.shape[1]
+    width = inputs.shape[2]
+    assert height % 32 == 0 and width % 32 == 0, \
+        'height {} or width {} cannot be divisible by 32'.format(height, width)
+
     net = layers_lib.repeat(inputs, 2, layers.conv2d, 64, [3, 3], scope='conv1')
     net = layers_lib.max_pool2d(net, [2, 2], scope='pool1')
     net = layers_lib.repeat(net, 2, layers.conv2d, 128, [3, 3], scope='conv2')
@@ -36,9 +41,9 @@ def vgg16(inputs,
     net = layers_lib.repeat(net, 3, layers.conv2d, 512, [3, 3], scope='conv5')
     net = layers_lib.max_pool2d(net, [2, 2], scope='pool5')
     # Use conv2d instead of fully_connected layers.
-    net = layers.conv2d(net, 4096, [7, 7], padding='VALID', scope='fc6')
+    net = layers.conv2d(net, 4096, [height / 32, width / 32], padding='VALID', scope='fc6')
     net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout6')
     net = layers.conv2d(net, 4096, [1, 1], scope='fc7')
     net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout7')
-    net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc8')
+    net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, scope='fc8')
     return net
