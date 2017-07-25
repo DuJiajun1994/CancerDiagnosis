@@ -25,8 +25,9 @@ def vgg16(inputs,
     Returns:
         the last op containing the log predictions.
     """
-    height = inputs.shape[1]
-    width = inputs.shape[2]
+    image_shape = inputs.get_shape().as_list()
+    height = image_shape[1]
+    width = image_shape[2]
     assert height % 32 == 0 and width % 32 == 0, \
         'height {} or width {} cannot be divisible by 32'.format(height, width)
 

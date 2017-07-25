@@ -9,6 +9,7 @@ cfg_lib = {
     }
 }
 
+
 def parse_config(dict):
     cfg = Config()
     cfg.train_iters = dict['train_iters']
@@ -17,6 +18,7 @@ def parse_config(dict):
     cfg.batch_size = dict['batch_size']
     cfg.display_step = dict['display_step']
     return cfg
+
 
 def get_config(cfg_name):
     if cfg_name in cfg_lib:

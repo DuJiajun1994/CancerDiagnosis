@@ -23,8 +23,8 @@ def train_model(model_name, data_name, cfg_name):
 
     predict = model(x)
 
-    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=predict, labels=y))
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss)
+    loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=predict, labels=y))
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=cfg.learning_rate).minimize(loss)
     correct_predict = tf.equal(tf.argmax(predict, 1), y)
     accuracy = tf.reduce_mean(tf.cast(correct_predict, tf.float32))
     saver = tf.train.Saver()
@@ -71,6 +71,7 @@ def train_model(model_name, data_name, cfg_name):
                 print("{} Iter {}: Testing Accuracy = {:.4f}".format(datetime.now(), step, test_accuracy))
 
         print('Finish!')
+
 
 def parse_args():
     """

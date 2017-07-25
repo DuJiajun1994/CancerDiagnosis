@@ -1,9 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Usage:
-# ./scripts/train.sh GPU_ID NET DATASET
+# bash scripts/train.sh GPU_ID NET DATA CONFIG
 #
 # Example:
-# ./scripts/train.sh
+# bash scripts/train.sh 0 vgg16 data1 cfg1
 
 set -x
 set -e
@@ -15,9 +15,8 @@ NET=$2
 DATA=$3
 CONFIG=$4
 
-
-LOG="../logs/cancer_diagnosis_${NET}_${DATA}_`date +'%Y_%m_%d_%H_%M_%S'`.txt"
+LOG="logs/cancer_diagnosis_${NET}_${DATA}_`date +'%Y_%m_%d_%H_%M_%S'`.txt"
 exec &> >(tee -a "$LOG")
 echo "Logging output to ${LOG}"
 
-time python ../lib/train.py --gpu GPU_ID --net NET --data DATA --cfg CONFIG
+time python lib/train.py --gpu ${GPU_ID} --net ${NET} --data ${DATA} --cfg ${CONFIG}
