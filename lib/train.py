@@ -6,12 +6,15 @@ import argparse
 import sys
 from model_provider import get_model
 from data_provider import DataProvider
+from config_provider import get_config
 
 pretrain_model_path = 'data/pretrain_models/vgg16_pretrain_model'
 snapshot_step = 1000
 
 
-def train_model(model_name, data_name, train_iters, test_step, learning_rate, batch_size, display_step=20):
+def train_model(model_name, data_name, cfg_name):
+    cfg = get_config(cfg_name)
+
     model = get_model(model_name)
     input_data = DataProvider(data_name)
 
@@ -35,17 +38,17 @@ def train_model(model_name, data_name, train_iters, test_step, learning_rate, ba
         print('Start training')
         train_loss = 0.
         train_accuracy = 0.
-        for step in range(1, train_iters+1):
-            images, labels = input_data.next_batch(batch_size, 'train')
+        for step in range(1, cfg.train_iters+1):
+            images, labels = input_data.next_batch(cfg.batch_size, 'train')
             batch_loss, _, batch_accuracy = sess.run([loss, optimizer, accuracy],
                                                      feed_dict={x: images, y: labels})
             train_loss += batch_loss
             train_accuracy += batch_accuracy
 
             # Display training status
-            if step % display_step == 0:
+            if step % cfg.display_step == 0:
                 print("{} Iter {}: Training Loss = {:.4f}, Accuracy = {:.4f}"
-                      .format(datetime.now(), step, train_loss / display_step, train_accuracy / display_step))
+                      .format(datetime.now(), step, train_loss / cfg.display_step, train_accuracy / cfg.display_step))
                 train_loss = 0.
                 train_accuracy = 0.
 
@@ -57,11 +60,11 @@ def train_model(model_name, data_name, train_iters, test_step, learning_rate, ba
                 sess.run(saver.save(sess, save_path))
 
             # Display testing status
-            if step % test_step == 0:
+            if step % cfg.test_step == 0:
                 test_accuracy = 0.
-                test_num = int(input_data.test_size / batch_size)
+                test_num = int(input_data.test_size / cfg.batch_size)
                 for _ in range(test_num):
-                    images, labels = input_data.next_batch(batch_size, 'test')
+                    images, labels = input_data.next_batch(cfg.batch_size, 'test')
                     acc = sess.run(accuracy, feed_dict={x: images, y: labels})
                     test_accuracy += acc
                 test_accuracy /= test_num
@@ -74,15 +77,19 @@ def parse_args():
     Parse input arguments
     """
     parser = argparse.ArgumentParser(description='Train Cancer Diagnosis Network')
+    parser.add_argument('--gpu', dest='gpu_id',
+                        help='gpu id to use',
+                        default=0, type=int)
     parser.add_argument('--net', dest='model_name',
                         help='net to use',
                         default='', type=str)
     parser.add_argument('--data', dest='data_name',
                         help='data to use',
                         default='vgg16', type=str)
-    parser.add_argument('--gpu', dest='gpu_id',
-                        help='gpu id to use',
-                        default=0, type=int)
+
+    parser.add_argument('--cfg', dest='cfg_name',
+                        help='cfg to use',
+                        default='', type=str)
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -97,4 +104,4 @@ if __name__ == '__main__':
     print('Called with args:')
     print(args)
 
-    train_model(args.model_name, args.data_name, train_iters, test_step, learning_rate, batch_size)
+    train_model(args.model_name, args.data_name, args.cfg_name)
