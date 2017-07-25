@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from tensorflow.contrib import layers
 from tensorflow.contrib.layers.python.layers import layers as layers_lib
+from tensorflow.python.ops import array_ops
 
 
 def vgg16(inputs,
@@ -47,4 +48,5 @@ def vgg16(inputs,
     net = layers.conv2d(net, 4096, [1, 1], scope='fc7')
     net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout7')
     net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, scope='fc8')
+    net = array_ops.squeeze(net, [1, 2], name='fc8/squeezed')
     return net

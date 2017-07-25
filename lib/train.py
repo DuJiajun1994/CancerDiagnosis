@@ -8,9 +8,14 @@ from model_provider import get_model
 from data_provider import DataProvider
 from config_provider import get_config
 
-pretrain_model_path = 'data/pretrain_models/vgg16_pretrain_model'
 snapshot_step = 1000
 
+
+def get_pretrain_model_path(model_name):
+    pretrain_model_path = os.path.join('data/pretrain_models/', '{}.model'.format(model_name))
+    assert os.path.exists(pretrain_model_path), \
+        'pretrain model {} is not existed'.format(pretrain_model_path)
+    return pretrain_model_path
 
 def train_model(model_name, data_name, cfg_name):
     cfg = get_config(cfg_name)
@@ -18,8 +23,8 @@ def train_model(model_name, data_name, cfg_name):
     model = get_model(model_name)
     input_data = DataProvider(data_name)
 
-    x = tf.placeholder(tf.float32, shape=[None, 224, 224, 3])  # images
-    y = tf.placeholder(tf.float32, shape=[None])  # labels: 0, not cancer; 1, has cancer
+    x = tf.placeholder(tf.float32, shape=[cfg.batch_size, 224, 224, 3])  # images
+    y = tf.placeholder(tf.int64, shape=[cfg.batch_size])  # labels: 0, not cancer; 1, has cancer
 
     predict = model(x)
 
@@ -30,9 +35,10 @@ def train_model(model_name, data_name, cfg_name):
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
-        sess.run(tf.initialize_all_variables())
+        sess.run(tf.global_variables_initializer())
 
         # Load pretrained model
+        pretrain_model_path = get_pretrain_model_path(model_name)
         sess.run(saver.restore(sess, pretrain_model_path))
 
         print('Start training')
