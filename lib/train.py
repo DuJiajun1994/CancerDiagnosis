@@ -2,6 +2,8 @@ import tensorflow as tf
 import os
 import time
 from datetime import datetime
+import argparse
+import sys
 from model_provider import get_model
 from data_provider import DataProvider
 
@@ -66,3 +68,33 @@ def train_model(model_name, data_name, train_iters, test_step, learning_rate, ba
                 print("{} Iter {}: Testing Accuracy = {:.4f}".format(datetime.now(), step, test_accuracy))
 
         print('Finish!')
+
+def parse_args():
+    """
+    Parse input arguments
+    """
+    parser = argparse.ArgumentParser(description='Train Cancer Diagnosis Network')
+    parser.add_argument('--net', dest='model_name',
+                        help='net to use',
+                        default='', type=str)
+    parser.add_argument('--data', dest='data_name',
+                        help='data to use',
+                        default='vgg16', type=str)
+    parser.add_argument('--gpu', dest='gpu_id',
+                        help='gpu id to use',
+                        default=0, type=int)
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args()
+    return args
+
+if __name__ == '__main__':
+    args = parse_args()
+
+    print('Called with args:')
+    print(args)
+
+    train_model(args.model_name, args.data_name, train_iters, test_step, learning_rate, batch_size)
