@@ -7,6 +7,7 @@ import sys
 from model_provider import get_model
 from data_provider import DataProvider
 from config_provider import get_config
+from tensorflow.contrib import slim
 
 
 def get_pretrain_model_path(model_name):
@@ -14,6 +15,17 @@ def get_pretrain_model_path(model_name):
     assert os.path.exists(pretrain_model_path), \
         'pretrain model {} is not existed'.format(pretrain_model_path)
     return pretrain_model_path
+
+def get_restore_vars(model_name):
+    val_list = []
+    all_vals = slim.get_model_variables()
+    exclusions = []
+    if model_name == 'vgg16':
+        exclusions = ['fc6', 'fc7', 'fc8']
+    for val in all_vals:
+        if val not in exclusions:
+            val_list.append(val)
+    return val_list
 
 def train_model(model_name, data_name, cfg_name):
     cfg = get_config(cfg_name)
@@ -32,6 +44,8 @@ def train_model(model_name, data_name, cfg_name):
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=cfg.learning_rate).minimize(loss)
     correct_predict = tf.equal(tf.argmax(predict, 1), y)
     accuracy = tf.reduce_mean(tf.cast(correct_predict, tf.float32))
+    restore_vars = get_restore_vars(model_name)
+    restorer = tf.train.Saver(restore_vars)
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
@@ -39,7 +53,7 @@ def train_model(model_name, data_name, cfg_name):
 
         # Load pretrained model
         pretrain_model_path = get_pretrain_model_path(model_name)
-        sess.run(saver.restore(sess, pretrain_model_path))
+        restorer.restore(sess, pretrain_model_path)
 
         print('Start training')
         train_loss = 0.
@@ -63,7 +77,7 @@ def train_model(model_name, data_name, cfg_name):
                 timestamp = time.strftime('%Y%m%d%H%M%S', time.localtime())
                 save_path = os.path.join('output',
                                          '{}_{}_{}.txt'.format(data_name, model_name, timestamp))
-                sess.run(saver.save(sess, save_path))
+                saver.save(sess, save_path)
 
             # Display testing status
             if step % cfg.test_step == 0:
