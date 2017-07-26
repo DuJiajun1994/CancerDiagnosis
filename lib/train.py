@@ -1,5 +1,12 @@
-import tensorflow as tf
+import sys
 import os
+lib_path = os.getcwd()
+print(lib_path)
+sys.path.insert(0, lib_path)
+print('System path:')
+print(sys.path)
+
+import tensorflow as tf
 import time
 from datetime import datetime
 import argparse
@@ -7,11 +14,12 @@ import sys
 from model_provider import get_model
 from data_provider import DataProvider
 from config_provider import get_config
+from paths import paths
 import tensorflow.contrib.slim as slim
 
 
 def get_pretrain_model_path(model_name):
-    pretrain_model_path = os.path.join('data/pretrain_models/', '{}.ckpt'.format(model_name))
+    pretrain_model_path = os.path.join(paths.data_path, 'pretrain_models', '{}.ckpt'.format(model_name))
     assert os.path.exists(pretrain_model_path), \
         'pretrain model {} is not existed'.format(pretrain_model_path)
     return pretrain_model_path

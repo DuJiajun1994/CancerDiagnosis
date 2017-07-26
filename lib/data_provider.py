@@ -1,11 +1,13 @@
 import numpy as np
 import cv2
+import os
+from paths import paths
 
 class DataProvider:
     def __init__(self, dataname):
         # Load training images (path) and labels
-        train_list = "../data/train/"+dataname+".txt"
-        test_list = "../data/test/"+dataname+".txt"
+        train_list = os.path.join(paths.data_path, 'train', dataname+'.txt')
+        test_list = os.path.join(paths.data_path, 'test', dataname+'.txt')
         with open(train_list) as f:
             lines = f.readlines()
             self.train_image = []
