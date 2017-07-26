@@ -8,8 +8,6 @@ from model_provider import get_model
 from data_provider import DataProvider
 from config_provider import get_config
 
-snapshot_step = 1000
-
 
 def get_pretrain_model_path(model_name):
     pretrain_model_path = os.path.join('data/pretrain_models/', '{}.model'.format(model_name))
@@ -19,6 +17,8 @@ def get_pretrain_model_path(model_name):
 
 def train_model(model_name, data_name, cfg_name):
     cfg = get_config(cfg_name)
+    print('Config:')
+    print(cfg)
 
     model = get_model(model_name)
     input_data = DataProvider(data_name)
@@ -59,7 +59,7 @@ def train_model(model_name, data_name, cfg_name):
                 train_accuracy = 0.
 
             # Snapshot
-            if step % snapshot_step == 0:
+            if step % cfg.snapshot_step == 0:
                 timestamp = time.strftime('%Y%m%d%H%M%S', time.localtime())
                 save_path = os.path.join('output',
                                          '{}_{}_{}.txt'.format(data_name, model_name, timestamp))

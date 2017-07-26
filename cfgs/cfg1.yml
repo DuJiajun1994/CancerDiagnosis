@@ -1,0 +1,5 @@
+train_iters: 10000
+test_step: 1000
+learning_rate: 0.01
+batch_size: 100
+display_step: 100
