@@ -10,7 +10,7 @@ from config_provider import get_config
 
 
 def get_pretrain_model_path(model_name):
-    pretrain_model_path = os.path.join('data/pretrain_models/', '{}.model'.format(model_name))
+    pretrain_model_path = os.path.join('data/pretrain_models/', '{}.ckpt'.format(model_name))
     assert os.path.exists(pretrain_model_path), \
         'pretrain model {} is not existed'.format(pretrain_model_path)
     return pretrain_model_path
