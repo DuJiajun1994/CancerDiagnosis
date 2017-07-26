@@ -32,19 +32,17 @@ def train_model(model_name, data_name, cfg_name):
     cfg = get_config(cfg_name)
     print('Config:')
     print(cfg)
-
     model = get_model(model_name)
     input_data = DataProvider(data_name)
 
     x = tf.placeholder(tf.float32, shape=[cfg.batch_size, 224, 224, 3])  # images
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size])  # labels: 0, not cancer; 1, has cancer
-
     predict = model(x)
-
     loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=predict, labels=y))
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=cfg.learning_rate).minimize(loss)
     correct_predict = tf.equal(tf.argmax(predict, 1), y)
     accuracy = tf.reduce_mean(tf.cast(correct_predict, tf.float32))
+
     restore_vars = get_restore_vars(model_name)
     restorer = tf.train.Saver(restore_vars)
     saver = tf.train.Saver()
@@ -62,7 +60,7 @@ def train_model(model_name, data_name, cfg_name):
         for step in range(1, cfg.train_iters+1):
             images, labels = input_data.next_batch(cfg.batch_size, 'train')
             batch_loss, _, batch_accuracy = sess.run([loss, optimizer, accuracy],
-                                                     feed_dict={x: images, y: labels})
+                                                        feed_dict={x: images, y: labels})
             train_loss += batch_loss
             train_accuracy += batch_accuracy
 
@@ -108,22 +106,17 @@ def parse_args():
     parser.add_argument('--data', dest='data_name',
                         help='data to use',
                         default='vgg16', type=str)
-
     parser.add_argument('--cfg', dest='cfg_name',
                         help='cfg to use',
                         default='', type=str)
-
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
-
     args = parser.parse_args()
     return args
 
 if __name__ == '__main__':
     args = parse_args()
-
     print('Called with args:')
     print(args)
-
     train_model(args.model_name, args.data_name, args.cfg_name)
