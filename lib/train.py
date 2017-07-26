@@ -7,7 +7,7 @@ import sys
 from model_provider import get_model
 from data_provider import DataProvider
 from config_provider import get_config
-from tensorflow.contrib import slim
+import tensorflow.contrib.slim as slim
 
 
 def get_pretrain_model_path(model_name):
@@ -17,15 +17,16 @@ def get_pretrain_model_path(model_name):
     return pretrain_model_path
 
 def get_restore_vars(model_name):
-    val_list = []
-    all_vals = slim.get_model_variables()
-    exclusions = []
-    if model_name == 'vgg16':
-        exclusions = ['fc6', 'fc7', 'fc8']
-    for val in all_vals:
-        if val not in exclusions:
-            val_list.append(val)
-    return val_list
+    model_vals = slim.get_model_variables()
+    restore_vals = []
+    for val in model_vals:
+        val_name = val.op.name
+        if val_name.split('/')[1].find('conv') >= 0:
+            restore_vals.append(val)
+    print('Load pretrained model:')
+    for i in range(len(restore_vals)):
+        print(restore_vals[i].op.name)
+    return restore_vals
 
 def train_model(model_name, data_name, cfg_name):
     cfg = get_config(cfg_name)

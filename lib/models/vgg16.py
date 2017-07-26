@@ -33,7 +33,7 @@ def vgg16(inputs,
     assert height % 32 == 0 and width % 32 == 0, \
         'height {} or width {} cannot be divisible by 32'.format(height, width)
 
-    with tf.variable_scope('vgg_16', 'vgg_16', [inputs]):
+    with tf.variable_scope('vgg_16'):
         net = layers_lib.repeat(inputs, 2, layers.conv2d, 64, [3, 3], scope='conv1')
         net = layers_lib.max_pool2d(net, [2, 2], scope='pool1')
         net = layers_lib.repeat(net, 2, layers.conv2d, 128, [3, 3], scope='conv2')
@@ -49,6 +49,6 @@ def vgg16(inputs,
         net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout6')
         net = layers.conv2d(net, 4096, [1, 1], scope='fc7')
         net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout7')
-        net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, scope='fc8')
+        net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc8')
         net = array_ops.squeeze(net, [1, 2], name='fc8/squeezed')
     return net
