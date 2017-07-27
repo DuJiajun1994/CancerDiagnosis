@@ -66,6 +66,7 @@ def train_model(model_name, data_name, cfg_name):
         train_loss = 0.
         train_accuracy = 0.
         for step in range(1, cfg.train_iters+1):
+            print('step {}'.format(step))
             images, labels = input_data.next_batch(cfg.batch_size, 'train')
             batch_loss, _, batch_accuracy = sess.run([loss, optimizer, accuracy],
                                                         feed_dict={x: images, y: labels})
@@ -105,9 +106,6 @@ def parse_args():
     Parse input arguments
     """
     parser = argparse.ArgumentParser(description='Train Cancer Diagnosis Network')
-    parser.add_argument('--gpu', dest='gpu_id',
-                        help='gpu id to use',
-                        default=0, type=int)
     parser.add_argument('--net', dest='model_name',
                         help='net to use',
                         default='', type=str)
