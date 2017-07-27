@@ -4,3 +4,5 @@ learning_rate: 0.01
 batch_size: 100
 display_step: 100
 snapshot_step: 1000
+image_height: 960
+image_width: 960

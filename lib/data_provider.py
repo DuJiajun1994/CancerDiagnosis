@@ -1,13 +1,13 @@
 import numpy as np
 import cv2
 import os
-from paths import paths
+from paths import Paths
 
 class DataProvider:
     def __init__(self, dataname):
         # Load training images (path) and labels
-        train_list = os.path.join(paths.data_path, 'train', dataname+'.txt')
-        test_list = os.path.join(paths.data_path, 'test', dataname+'.txt')
+        train_list = os.path.join(Paths.data_path, 'train', dataname+'.txt')
+        test_list = os.path.join(Paths.data_path, 'test', dataname+'.txt')
         with open(train_list) as f:
             lines = f.readlines()
             self.train_image = []
@@ -64,8 +64,11 @@ class DataProvider:
 
         # Read images
         images = np.ndarray([batch_size, self.crop_size, self.crop_size, 3])
-        for i in xrange(len(paths)):
-            img = cv2.imread(paths[i])
+        for i in range(len(paths)):
+            image_path = os.path.join(Paths.data_path, paths[i])
+            assert os.path.exists(image_path), \
+                'image {} is not existed'.format(image_path)
+            img = cv2.imread(image_path)
             h, w, c = img.shape
             assert c==3
 
@@ -76,9 +79,5 @@ class DataProvider:
             img_crop = img[shift:shift+self.crop_size, shift:shift+self.crop_size, :]
             images[i] = img_crop
 
-        # Expand labels
-        one_hot_labels = np.zeros((batch_size, self.n_classes))
-        for i in xrange(len(labels)):
-            one_hot_labels[i][labels[i]] = 1
-        return images, one_hot_labels
+        return images, labels
 

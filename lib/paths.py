@@ -1,9 +1,9 @@
 import os
 from easydict import EasyDict
 
-paths = EasyDict()
-paths.root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-paths.data_path = os.path.join(paths.root_path, 'data')
-paths.output_path = os.path.join(paths.root_path, 'output')
-paths.cfg_path = os.path.join(paths.root_path, 'cfgs')
+Paths = EasyDict()
+Paths.root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+Paths.data_path = os.path.join(Paths.root_path, 'data')
+Paths.output_path = os.path.join(Paths.root_path, 'output')
+Paths.cfg_path = os.path.join(Paths.root_path, 'cfgs')
 

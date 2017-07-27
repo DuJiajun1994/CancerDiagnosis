@@ -14,12 +14,12 @@ import sys
 from model_provider import get_model
 from data_provider import DataProvider
 from config_provider import get_config
-from paths import paths
+from paths import Paths
 import tensorflow.contrib.slim as slim
 
 
 def get_pretrain_model_path(model_name):
-    pretrain_model_path = os.path.join(paths.data_path, 'pretrain_models', '{}.ckpt'.format(model_name))
+    pretrain_model_path = os.path.join(Paths.data_path, 'pretrain_models', '{}.ckpt'.format(model_name))
     assert os.path.exists(pretrain_model_path), \
         'pretrain model {} is not existed'.format(pretrain_model_path)
     return pretrain_model_path
@@ -43,7 +43,7 @@ def train_model(model_name, data_name, cfg_name):
     model = get_model(model_name)
     input_data = DataProvider(data_name)
 
-    x = tf.placeholder(tf.float32, shape=[cfg.batch_size, 224, 224, 3])  # images
+    x = tf.placeholder(tf.float32, shape=[cfg.batch_size, cfg.image_height, cfg.image_width, 3])  # images
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size])  # labels: 0, not cancer; 1, has cancer
     predict = model(x)
     loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=predict, labels=y))
