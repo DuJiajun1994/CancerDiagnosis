@@ -26,14 +26,19 @@ def get_pretrain_model_path(model_name):
 
 def get_restore_vars(model_name):
     model_vals = slim.get_model_variables()
+    print('Model vals:')
+    for val in model_vals:
+        print(val.op.name)
+
     restore_vals = []
     for val in model_vals:
         val_name = val.op.name
         if val_name.split('/')[1].find('conv') >= 0:
             restore_vals.append(val)
-    print('Load pretrained model:')
-    for i in range(len(restore_vals)):
-        print(restore_vals[i].op.name)
+    print('Vals load from pretrained model:')
+    for val in restore_vals:
+        print(val.op.name)
+
     return restore_vals
 
 def train_model(model_name, data_name, cfg_name):
@@ -84,7 +89,7 @@ def train_model(model_name, data_name, cfg_name):
             if step % cfg.snapshot_step == 0:
                 timestamp = time.strftime('%Y%m%d%H%M%S', time.localtime())
                 save_path = os.path.join('output',
-                                         '{}_{}_{}.txt'.format(data_name, model_name, timestamp))
+                                         '{}_{}_{}.ckpt'.format(data_name, model_name, step))
                 saver.save(sess, save_path)
 
             # Display testing status
@@ -108,12 +113,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train Cancer Diagnosis Network')
     parser.add_argument('--net', dest='model_name',
                         help='net to use',
-                        default='', type=str)
+                        default='vgg16', type=str)
     parser.add_argument('--data', dest='data_name',
                         help='data to use',
-                        default='vgg16', type=str)
+                        default='', type=str)
     parser.add_argument('--cfg', dest='cfg_name',
-                        help='cfg to use',
+                        help='train&test config to use',
                         default='', type=str)
     if len(sys.argv) == 1:
         parser.print_help()
