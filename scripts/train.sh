@@ -19,5 +19,5 @@ LOG="logs/cancer_diagnosis_${NET}_${DATA}_`date +'%Y_%m_%d_%H_%M_%S'`.txt"
 exec &> >(tee -a "$LOG")
 echo "Logging output to ${LOG}"
 
-export CUDA_VISIBLE_DEVICES=GPU_ID
+export CUDA_VISIBLE_DEVICES=${GPU_ID}
 time python lib/train.py --net ${NET} --data ${DATA} --cfg ${CONFIG}

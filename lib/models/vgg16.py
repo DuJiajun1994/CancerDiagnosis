@@ -45,9 +45,9 @@ def vgg16(inputs,
         net = layers_lib.repeat(net, 3, layers.conv2d, 512, [3, 3], scope='conv5')
         net = layers_lib.max_pool2d(net, [2, 2], scope='pool5')
         # Use conv2d instead of fully_connected layers.
-        net = layers.conv2d(net, 4096, [height / 32, width / 32], padding='VALID', scope='fc6')
+        net = layers.conv2d(net, 1024, [height / 32, width / 32], padding='VALID', scope='fc6')
         net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout6')
-        net = layers.conv2d(net, 4096, [1, 1], scope='fc7')
+        net = layers.conv2d(net, 1024, [1, 1], scope='fc7')
         net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout7')
         net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc8')
         net = array_ops.squeeze(net, [1, 2], name='fc8/squeezed')

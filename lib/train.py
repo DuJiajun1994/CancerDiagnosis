@@ -50,7 +50,7 @@ def train_model(model_name, data_name, cfg_name):
 
     x = tf.placeholder(tf.float32, shape=[cfg.batch_size, cfg.image_height, cfg.image_width, 3])  # images
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size])  # labels: 0, not cancer; 1, has cancer
-    labels = tf.one_hot(y, depth=2, on_value=1, off_value=0)
+    labels = tf.one_hot(y, depth=2, on_value=1., off_value=0., dtype=tf.float32)
     predicts = model(x)
     loss = - tf.reduce_mean(tf.reduce_sum(labels * tf.log(predicts), 1))
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=cfg.learning_rate).minimize(loss)
@@ -72,13 +72,13 @@ def train_model(model_name, data_name, cfg_name):
         train_loss = 0.
         train_accuracy = 0.
         for step in range(1, cfg.train_iters+1):
-            print('step {}'.format(step))
             images, labels = input_data.next_batch(cfg.batch_size, 'train')
-            batch_loss, _, batch_accuracy = sess.run([loss, optimizer, accuracy],
+            print('image shape: {}, labels: {}'.format(images.shape, labels))
+            batch_loss, _, batch_accuracy, batch_predict = sess.run([loss, optimizer, accuracy, predicts],
                                                         feed_dict={x: images, y: labels})
             train_loss += batch_loss
             train_accuracy += batch_accuracy
-
+            print('predict: {}'.format(batch_predict))
             # Display training status
             if step % cfg.display_step == 0:
                 print("{} Iter {}: Training Loss = {:.4f}, Accuracy = {:.4f}"
