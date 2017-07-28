@@ -19,7 +19,10 @@ import tensorflow.contrib.slim as slim
 
 
 def get_pretrain_model_path(model_name):
-    pretrain_model_path = os.path.join(Paths.data_path, 'pretrain_models', '{}.ckpt'.format(model_name))
+    pretrain_model_name = model_name
+    if model_name == 'vgg16_fcn':
+        pretrain_model_name = 'vgg16'
+    pretrain_model_path = os.path.join(Paths.data_path, 'pretrain_models', '{}.ckpt'.format(pretrain_model_name))
     assert os.path.exists(pretrain_model_path), \
         'pretrain model {} is not existed'.format(pretrain_model_path)
     return pretrain_model_path
@@ -73,12 +76,10 @@ def train_model(model_name, data_name, cfg_name):
         train_accuracy = 0.
         for step in range(1, cfg.train_iters+1):
             images, labels = input_data.next_batch(cfg.batch_size, 'train')
-            print('image shape: {}, labels: {}'.format(images.shape, labels))
             batch_loss, _, batch_accuracy, batch_predict = sess.run([loss, optimizer, accuracy, predicts],
                                                         feed_dict={x: images, y: labels})
             train_loss += batch_loss
             train_accuracy += batch_accuracy
-            print('predict: {}'.format(batch_predict))
             # Display training status
             if step % cfg.display_step == 0:
                 print("{} Iter {}: Training Loss = {:.4f}, Accuracy = {:.4f}"
