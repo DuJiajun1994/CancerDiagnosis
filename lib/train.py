@@ -50,10 +50,11 @@ def train_model(model_name, data_name, cfg_name):
 
     x = tf.placeholder(tf.float32, shape=[cfg.batch_size, cfg.image_height, cfg.image_width, 3])  # images
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size])  # labels: 0, not cancer; 1, has cancer
-    predict = model(x)
-    loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=predict, labels=y))
+    labels = tf.one_hot(y, depth=2, on_value=1, off_value=0)
+    predicts = model(x)
+    loss = - tf.reduce_mean(tf.reduce_sum(labels * tf.log(predicts), 1))
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=cfg.learning_rate).minimize(loss)
-    correct_predict = tf.equal(tf.argmax(predict, 1), y)
+    correct_predict = tf.equal(tf.argmax(predicts, 1), y)
     accuracy = tf.reduce_mean(tf.cast(correct_predict, tf.float32))
 
     restore_vars = get_restore_vars(model_name)

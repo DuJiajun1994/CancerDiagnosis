@@ -25,7 +25,7 @@ def vgg16(inputs,
         layers during training.
 
     Returns:
-        the last op containing the log predictions.
+        the last op containing the cancer probability of shape [batch_size, 2].
     """
     image_shape = inputs.get_shape().as_list()
     height = image_shape[1]
@@ -51,4 +51,5 @@ def vgg16(inputs,
         net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout7')
         net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc8')
         net = array_ops.squeeze(net, [1, 2], name='fc8/squeezed')
+        net = tf.nn.softmax(net)
     return net

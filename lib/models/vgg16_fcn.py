@@ -32,5 +32,6 @@ def vgg16_fcn(inputs, num_classes=2):
         # Not use fully connected layers.
         net = layers.conv2d(net, 1024, [1, 1], scope='fc6')
         net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc7')
+        net = tf.nn.softmax(net)
         net = tf.reduce_mean(net, [1, 2])
     return net
