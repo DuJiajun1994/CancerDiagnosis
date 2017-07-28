@@ -1,8 +1,8 @@
 train_iters: 10000
-test_step: 100
+test_step: 1000
 learning_rate: 0.0001
 batch_size: 1 
-display_step: 10
+display_step: 100
 snapshot_step: 10000
 image_height: 960
 image_width: 960
