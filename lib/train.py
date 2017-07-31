@@ -51,14 +51,14 @@ def train_model(model_name, data_name, cfg_name):
     model = get_model(model_name)
     input_data = DataProvider(data_name)
 
-    x = tf.placeholder(tf.float32, shape=[cfg.batch_size, cfg.image_height, cfg.image_width, 3])  # images
-    y = tf.placeholder(tf.int64, shape=[cfg.batch_size])  # labels: 0, not cancer; 1, has cancer
+    x = tf.placeholder(tf.float32, shape=[cfg.batch_size, cfg.image_height, cfg.image_width, 3], name='x')  # images
+    y = tf.placeholder(tf.int64, shape=[cfg.batch_size], name='y')  # labels: 0, not cancer; 1, has cancer
     labels = tf.one_hot(y, depth=2, on_value=1., off_value=0., dtype=tf.float32)
     predicts = model(x)
     loss = - tf.reduce_mean(tf.reduce_sum(labels * tf.log(predicts), 1))
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=cfg.learning_rate).minimize(loss)
     correct_predict = tf.equal(tf.argmax(predicts, 1), y)
-    accuracy = tf.reduce_mean(tf.cast(correct_predict, tf.float32))
+    accuracy = tf.reduce_mean(tf.cast(correct_predict, tf.float32), name='accuracy')
 
     restore_vars = get_restore_vars(model_name)
     restorer = tf.train.Saver(restore_vars)
@@ -91,7 +91,7 @@ def train_model(model_name, data_name, cfg_name):
             if step % cfg.snapshot_step == 0:
                 timestamp = time.strftime('%Y%m%d%H%M%S', time.localtime())
                 save_path = os.path.join('output',
-                                         '{}_{}_{}.ckpt'.format(data_name, model_name, step))
+                                         '{}_{}_{}'.format(data_name, model_name, step))
                 saver.save(sess, save_path)
 
             # Display testing status

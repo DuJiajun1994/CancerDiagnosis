@@ -20,14 +20,16 @@ def test_model(data_name, cfg_name, trained_model_name):
     print(cfg)
     input_data = DataProvider(data_name)
 
-    meta_path = os.path.join(Paths.output_path, '{}.ckpt.meta'.format(trained_model_name))
+    meta_path = os.path.join(Paths.output_path, '{}.meta'.format(trained_model_name))
     assert os.path.exists(meta_path), \
         '{} is not existed'.format(meta_path)
     saver = tf.train.import_meta_graph(meta_path)
 
     with tf.Session() as sess:
         # Load trained model
-        saver.restore(sess, tf.train.latest_checkpoint('./'))
+        checkpoint_path = os.path.join(Paths.output_path, trained_model_name)
+        print('checkpoint path: {}'.format(checkpoint_path))
+        saver.restore(sess, checkpoint_path)
 
         graph = tf.get_default_graph()
         x = graph.get_tensor_by_name("x:0")
