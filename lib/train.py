@@ -55,7 +55,7 @@ def train_model(model_name, data_name, cfg_name):
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size], name='y')  # labels: 0, not cancer; 1, has cancer
     labels = tf.one_hot(y, depth=2, on_value=1., off_value=0., dtype=tf.float32)
     predicts = model(x)
-    loss = - tf.reduce_mean(tf.reduce_sum(labels * tf.log(predicts), 1))
+    loss = - tf.reduce_mean(tf.reduce_sum(labels * tf.log(predicts + 1e-10), 1))  # add 1e-10 to avoid log(0) = NaN
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=cfg.learning_rate).minimize(loss)
     correct_predict = tf.equal(tf.argmax(predicts, 1), y)
     accuracy = tf.reduce_mean(tf.cast(correct_predict, tf.float32), name='accuracy')
