@@ -8,10 +8,7 @@ from tensorflow.contrib.layers.python.layers import layers as layers_lib
 from tensorflow.python.ops import array_ops
 
 
-def vgg16(inputs,
-          num_classes=2,
-          is_training=True,
-          dropout_keep_prob=0.5):
+def vgg16(inputs, num_classes=2, is_training=True, dropout_keep_prob=0.5):
     """Oxford Net VGG 16-Layers version D Example.
 
     Note: All the fully_connected layers have been transformed to conv2d layers.
@@ -33,6 +30,27 @@ def vgg16(inputs,
     assert height % 32 == 0 and width % 32 == 0, \
         'height {} or width {} cannot be divisible by 32'.format(height, width)
 
+    net = vgg16_base(inputs)
+    # Use conv2d instead of fully_connected layers.
+    net = layers.conv2d(net, 1024, [height / 32, width / 32], padding='VALID', scope='fc6')
+    net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout6')
+    net = layers.conv2d(net, 1024, [1, 1], scope='fc7')
+    net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout7')
+    net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc8')
+    net = array_ops.squeeze(net, [1, 2], name='fc8/squeezed')
+    net = tf.nn.softmax(net, name='predicts')
+    return net
+
+def vgg16_fcn(inputs, num_classes=2, is_training=True, dropout_keep_prob=0.5):
+    net = vgg16_base(inputs)
+    # Not use fully connected layers.
+    net = layers.conv2d(net, 1024, [1, 1], scope='fc6')
+    net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc7')
+    net = tf.nn.softmax(net)
+    net = tf.reduce_mean(net, [1, 2], name='predicts')
+    return net
+
+def vgg16_base(inputs):
     with tf.variable_scope('vgg_16'):
         net = layers_lib.repeat(inputs, 2, layers.conv2d, 64, [3, 3], scope='conv1')
         net = layers_lib.max_pool2d(net, [2, 2], scope='pool1')
@@ -44,12 +62,4 @@ def vgg16(inputs,
         net = layers_lib.max_pool2d(net, [2, 2], scope='pool4')
         net = layers_lib.repeat(net, 3, layers.conv2d, 512, [3, 3], scope='conv5')
         net = layers_lib.max_pool2d(net, [2, 2], scope='pool5')
-        # Use conv2d instead of fully_connected layers.
-        net = layers.conv2d(net, 1024, [height / 32, width / 32], padding='VALID', scope='fc6')
-        net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout6')
-        net = layers.conv2d(net, 1024, [1, 1], scope='fc7')
-        net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training, scope='dropout7')
-        net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc8')
-        net = array_ops.squeeze(net, [1, 2], name='fc8/squeezed')
-        net = tf.nn.softmax(net)
     return net
