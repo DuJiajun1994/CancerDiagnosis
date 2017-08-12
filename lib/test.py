@@ -35,16 +35,16 @@ def test_model(data_name, cfg_name, trained_model_name):
         x = graph.get_tensor_by_name("x:0")
         y = graph.get_tensor_by_name("y:0")
         accuracy = graph.get_tensor_by_name("accuracy:0")
-        predicts = graph.get_tensor_by_name("predicts:0")
+        predicts = graph.get_tensor_by_name("vgg_16/predicts:0")
 
         test_accuracy = 0.
         test_num = int(input_data.test_size / cfg.batch_size)
-        for _ in range(test_num):
+        for image_id in range(test_num):
             images, labels = input_data.next_batch(cfg.batch_size, 'test')
             acc, pred = sess.run([accuracy, predicts], feed_dict={x: images, y: labels})
             test_accuracy += acc
             for i in range(cfg.batch_size):
-                print('{} {}'.format(labels[i], pred[i]))
+                print('{} {} {}'.format(image_id, labels[i], pred[i][labels[i]]))
         test_accuracy /= test_num
         print("Testing Accuracy = {:.4f}".format(test_accuracy))
         print('Finish!')

@@ -20,8 +20,10 @@ import tensorflow.contrib.slim as slim
 
 def get_pretrain_model_path(model_name):
     pretrain_model_name = model_name
-    if model_name == 'vgg16_fcn':
-        pretrain_model_name = 'vgg16'
+    if model_name.find('fcn') >= 0:
+        pretrain_model_name = model_name[0: -4]
+    else:
+        pretrain_model_name = model_name
     pretrain_model_path = os.path.join(Paths.data_path, 'pretrain_models', '{}.ckpt'.format(pretrain_model_name))
     assert os.path.exists(pretrain_model_path), \
         'pretrain model {} is not existed'.format(pretrain_model_path)
@@ -36,7 +38,7 @@ def get_restore_vars(model_name):
     restore_vals = []
     for val in model_vals:
         val_name = val.op.name
-        if val_name.split('/')[1].find('conv') >= 0:
+        if val_name.split('/')[0].find('not_pretrained') < 0:
             restore_vals.append(val)
     print('Vals load from pretrained model:')
     for val in restore_vals:
