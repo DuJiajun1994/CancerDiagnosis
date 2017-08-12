@@ -5,33 +5,54 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow.contrib.slim.nets import inception
 from tensorflow.contrib import layers
+from tensorflow.contrib.layers.python.layers import layers as layers_lib
+from tensorflow.python.ops import array_ops
 slim = tf.contrib.slim
 
-from models.vgg16 import vgg16, vgg16_fcn
+from models.vgg16 import vgg16_base
 
 
 def build_model(model_name, inputs, num_classes=2, is_training=True, dropout_keep_prob=0.5):
-    if model_name == 'vgg16':
-        return vgg16(inputs, num_classes, is_training, dropout_keep_prob)
-    elif model_name == 'vgg16_fcn':
-        return vgg16_fcn(inputs, num_classes, is_training, dropout_keep_prob)
-    elif model_name.find('fcn') >= 0:
-        return build_fcn_model(model_name[0, -4], inputs, num_classes, is_training, dropout_keep_prob)
+    use_fcn = False
+    if model_name.find('fcn') >= 0:
+        use_fcn = True
+        model_base_name = model_name[0, -4]
     else:
-        raise Exception('model {} is not existed'.format(model_name))
+        model_base_name = model_name
 
-def build_fcn_model(model_name, inputs, num_classes=2, is_training=True, dropout_keep_prob=0.5):
-    if model_name == 'inception_v1':
+    if model_base_name == 'vgg16':
+        net = vgg16_base(inputs)
+    elif model_base_name == 'inception_v1':
         net = inception.inception_v1_base(inputs)
-    elif model_name == 'inception_v2':
+    elif model_base_name == 'inception_v2':
         net = inception.inception_v2_base(inputs)
-    elif model_name == 'inception_v2':
+    elif model_base_name == 'inception_v3':
         net = inception.inception_v3_base(inputs)
     else:
         raise Exception('model {} is not existed'.format(model_name))
 
+    if use_fcn:
+        net = fully_convolutional_networks(net, num_classes, is_training, dropout_keep_prob)
+    else:
+        net = fully_connected_networks(net, num_classes, is_training, dropout_keep_prob)
+    return net
+
+
+def fully_connected_networks(net, num_classes=2, is_training=True, dropout_keep_prob=0.5):
+    # Use conv2d instead of fully_connected layers.
+    net = layers.conv2d(net, 1024, net.get_shape()[1:3], padding='VALID')
+    net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training)
     net = layers.conv2d(net, 1024, [1, 1])
+    net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training)
     net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None)
+    net = array_ops.squeeze(net, [1, 2])
+    net = tf.nn.softmax(net, name='predicts')
+    return net
+
+def fully_convolutional_networks(net, num_classes=2, is_training=True, dropout_keep_prob=0.5):
+    # Not use fully connected layers.
+    net = layers.conv2d(net, 1024, [1, 1], scope='fc6')
+    net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='fc7')
     net = tf.nn.softmax(net)
     net = tf.reduce_mean(net, [1, 2], name='predicts')
     return net
