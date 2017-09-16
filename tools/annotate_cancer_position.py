@@ -24,9 +24,8 @@ def get_position(event, x, y, flags, param):
 
 image_dir = '/home/dujiajun/thyroid nodule/benign tumour'
 image_list = os.listdir(image_dir)
-list.sort(image_list)
-for i in range(0, len(image_list)):
-    image_name = image_list[i]
+image_list.sort()
+for image_name in image_list:
     status = 0
     cv2.namedWindow(image_name)
     cv2.setMouseCallback(image_name, get_position)
