@@ -12,7 +12,7 @@ from datetime import datetime
 import argparse
 import sys
 from build_model import build_model
-from data_provider import DataProvider
+from get_data_provider import get_data_provider
 from config_provider import get_config
 from paths import Paths
 import tensorflow.contrib.slim as slim
@@ -50,7 +50,7 @@ def train_model(model_name, data_name, cfg_name):
     cfg = get_config(cfg_name)
     print('Config:')
     print(cfg)
-    input_data = DataProvider(data_name)
+    data_provider = get_data_provider(data_name)
 
     x = tf.placeholder(tf.float32, shape=[cfg.batch_size, None, None, 3], name='x')  # images
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size], name='y')  # labels: 0, not cancer; 1, has cancer
@@ -76,7 +76,7 @@ def train_model(model_name, data_name, cfg_name):
         train_loss = 0.
         train_accuracy = 0.
         for step in range(1, cfg.train_iters+1):
-            images, labels = input_data.next_batch(cfg.batch_size, 'train')
+            images, labels = data_provider.next_batch(cfg.batch_size, 'train')
             batch_loss, _, batch_accuracy, batch_predict = sess.run([loss, optimizer, accuracy, predicts],
                                                         feed_dict={x: images, y: labels})
             train_loss += batch_loss
@@ -98,9 +98,9 @@ def train_model(model_name, data_name, cfg_name):
             # Display testing status
             if step % cfg.test_step == 0:
                 test_accuracy = 0.
-                test_num = int(input_data.test_size / cfg.batch_size)
+                test_num = int(data_provider.test_size / cfg.batch_size)
                 for _ in range(test_num):
-                    images, labels = input_data.next_batch(cfg.batch_size, 'test')
+                    images, labels = data_provider.next_batch(cfg.batch_size, 'test')
                     acc = sess.run(accuracy, feed_dict={x: images, y: labels})
                     test_accuracy += acc
                 test_accuracy /= test_num
