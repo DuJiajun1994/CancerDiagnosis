@@ -49,15 +49,15 @@ class CancerAnnotated(DataProvider):
             'image {} is not existed'.format(image_path)
         img = cv2.imread(image_path)
         img = img.astype(np.float32)
-        img_mean = img.mean(axis=0).mean(axis=0)
-        img -= img_mean
+#img_mean = img.mean(axis=0).mean(axis=0)
+#img -= img_mean
         height, width, _ = img.shape
         x1 = max(x1-self._cfg.margin_size, 0)
         y1 = max(y1-self._cfg.margin_size, 0)
         x2 = min(x2+self._cfg.margin_size, width-1)
         y2 = min(y2+self._cfg.margin_size, height-1)
         img = img[y1: y2, x1: x2, :]
-        img = cv2.resize(img, (224, 224))
+        img = cv2.resize(img, (self._cfg.resize_length, self._cfg.resize_length))
         return img
 
     def _get_batch_data(self, df, batch_ids):
@@ -80,6 +80,6 @@ class CancerAnnotated(DataProvider):
             batch_data, batch_label = self._get_batch_data(self._train_df, batch_ids)
         elif phase == 'test':
             batch_ids, self._test_index = self._get_batch_ids(self._test_list, self._test_index, batch_size)
-            batch_data, _ = self._get_batch_data(self._test_df, batch_ids)
+            batch_data, batch_label = self._get_batch_data(self._test_df, batch_ids)
         return batch_data, batch_label
 

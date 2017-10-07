@@ -6,3 +6,4 @@ display_step: 100
 snapshot_step: 1000
 dir_name: 'all'
 margin_size: 0
+resize_length: 224

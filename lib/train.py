@@ -52,7 +52,7 @@ def train_model(model_name, data_name, cfg_name):
     print(cfg)
     data_provider = get_data_provider(data_name, cfg)
 
-    x = tf.placeholder(tf.float32, shape=[cfg.batch_size, None, None, 3], name='x')  # images
+    x = tf.placeholder(tf.float32, shape=[cfg.batch_size, cfg.resize_length, cfg.resize_length, 3], name='x')  # images
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size], name='y')  # labels: 0, not cancer; 1, has cancer
     labels = tf.one_hot(y, depth=2, on_value=1., off_value=0., dtype=tf.float32)
     predicts = build_model(model_name, x)
