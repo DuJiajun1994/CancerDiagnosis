@@ -7,19 +7,19 @@ import random
 import cv2
 
 
-EXPEND_LENGTH = 100
-
 class CancerAnnotated(DataProvider):
-    def __init__(self, data_name):
-        self._data_name = data_name
-        train_path = os.path.join(Paths.data_path, data_name, 'annotations/train.csv')
-        test_path = os.path.join(Paths.data_path, data_name, 'annotations/test.csv')
+    def __init__(self, cfg):
+        DataProvider.__init__(self, cfg)
+        csv_dir = os.path.join(Paths.data_path, 'thyroid nodule/annotations', self._cfg.dir_name)
+        train_path = os.path.join(csv_dir, 'train.csv')
+        test_path = os.path.join(csv_dir, 'test.csv')
         data_type = {
             'image_name': np.str,
             'x1': np.int,
             'y1': np.int,
             'x2': np.int,
-            'y2': np.int
+            'y2': np.int,
+            'label': np.int
         }
         self._train_df = pd.read_csv(train_path, dtype=data_type)
         self._test_df = pd.read_csv(test_path, dtype=data_type)
@@ -40,17 +40,20 @@ class CancerAnnotated(DataProvider):
         return batch_ids, next_id_index
 
     def _crop_image(self, image_name, x1, y1, x2, y2):
-        image_path = os.path.join(Paths.data_path, self._data_name, 'images', image_name)
+        image_path = os.path.join(Paths.data_path, 'thyroid nodule/images', image_name)
         assert os.path.exists(image_path), \
             'image {} is not existed'.format(image_path)
         img = cv2.imread(image_path)
+        img = img.astype(np.float32)
+        img_mean = img.mean(axis=[0, 1])
+        img -= img_mean
         height, width, _ = img.shape
-        x1 = max(x1-EXPEND_LENGTH, 0)
-        y1 = max(y1-EXPEND_LENGTH, 0)
-        x2 = min(x2+EXPEND_LENGTH, width-1)
-        y2 = min(y2+EXPEND_LENGTH, height-1)
-        img_crop = img[x1: x2, y1: y2, :]
-        return img_crop
+        x1 = max(x1-self._cfg.margin_size, 0)
+        y1 = max(y1-self._cfg.margin_size, 0)
+        x2 = min(x2+self._cfg.margin_size, width-1)
+        y2 = min(y2+self._cfg.margin_size, height-1)
+        img = img[x1: x2, y1: y2, :]
+        return img
 
     def _get_batch_data(self, df, batch_ids):
         batch_data = np.hstack([

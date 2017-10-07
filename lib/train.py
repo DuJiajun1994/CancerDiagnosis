@@ -50,7 +50,7 @@ def train_model(model_name, data_name, cfg_name):
     cfg = get_config(cfg_name)
     print('Config:')
     print(cfg)
-    data_provider = get_data_provider(data_name)
+    data_provider = get_data_provider(data_name, cfg)
 
     x = tf.placeholder(tf.float32, shape=[cfg.batch_size, None, None, 3], name='x')  # images
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size], name='y')  # labels: 0, not cancer; 1, has cancer

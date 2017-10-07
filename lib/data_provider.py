@@ -1,5 +1,6 @@
 class DataProvider(object):
-    def __init__(self):
+    def __init__(self, cfg):
+        self._cfg = cfg
         self._test_size = None
 
     def next_batch(self, batch_size, phase):
