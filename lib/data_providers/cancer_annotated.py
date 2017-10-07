@@ -39,8 +39,12 @@ class CancerAnnotated(DataProvider):
         next_id_index = (id_index + batch_size) % len(id_list)
         return batch_ids, next_id_index
 
-    def _crop_image(self, image_name, x1, y1, x2, y2):
-        image_path = os.path.join(Paths.data_path, 'thyroid nodule/images', image_name)
+    def _crop_image(self, label, image_name, x1, y1, x2, y2):
+        if label == 0:
+            image_dir = 'benign tumour'
+        else:
+            image_dir = 'malignant tumour'
+        image_path = os.path.join(Paths.data_path, 'thyroid nodule/images', image_dir, image_name)
         assert os.path.exists(image_path), \
             'image {} is not existed'.format(image_path)
         img = cv2.imread(image_path)
@@ -57,7 +61,7 @@ class CancerAnnotated(DataProvider):
 
     def _get_batch_data(self, df, batch_ids):
         batch_data = np.hstack([
-            self._crop_image(df['image_name'][index_id], df['x1'][index_id], df['y1'][index_id], \
+            self._crop_image(df['label'][index_id], df['image_name'][index_id], df['x1'][index_id], df['y1'][index_id], \
                              df['x2'][index_id], df['y2'][index_id])
             for index_id in batch_ids
         ])
