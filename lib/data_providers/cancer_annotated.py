@@ -49,23 +49,24 @@ class CancerAnnotated(DataProvider):
             'image {} is not existed'.format(image_path)
         img = cv2.imread(image_path)
         img = img.astype(np.float32)
-        img_mean = img.mean(axis=[0, 1])
+        img_mean = img.mean(axis=0).mean(axis=0)
         img -= img_mean
         height, width, _ = img.shape
         x1 = max(x1-self._cfg.margin_size, 0)
         y1 = max(y1-self._cfg.margin_size, 0)
         x2 = min(x2+self._cfg.margin_size, width-1)
         y2 = min(y2+self._cfg.margin_size, height-1)
-        img = img[x1: x2, y1: y2, :]
+        img = img[y1: y2, x1: x2, :]
+        img = cv2.resize(img, (224, 224))
         return img
 
     def _get_batch_data(self, df, batch_ids):
-        batch_data = np.hstack([
+        batch_data = np.array([
             self._crop_image(df['label'][index_id], df['image_name'][index_id], df['x1'][index_id], df['y1'][index_id], \
                              df['x2'][index_id], df['y2'][index_id])
             for index_id in batch_ids
         ])
-        batch_label = np.hstack([
+        batch_label = np.array([
             df['label'][index_id] for index_id in batch_ids
         ])
         return batch_data, batch_label

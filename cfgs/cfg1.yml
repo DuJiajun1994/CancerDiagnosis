@@ -4,5 +4,5 @@ learning_rate: 0.001
 batch_size: 1 
 display_step: 100
 snapshot_step: 1000
-dir_name: 'smaller than 1cm'
-margin_size: 100
+dir_name: 'all'
+margin_size: 0
