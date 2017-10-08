@@ -41,9 +41,9 @@ class CancerAnnotated(DataProvider):
 
     @staticmethod
     def _apply_margin(x1, y1, x2, y2, width, height, margin_size):
-        x_mid = (x1 + x2) / 2
-        y_mid = (y1 + y2) / 2
-        r1 = (x2 - x1) / 2 + margin_size
+        x_mid = (x1 + x2) // 2
+        y_mid = (y1 + y2) // 2
+        r1 = (x2 - x1) // 2 + margin_size
         x1 = max(x_mid - r1, 0)
         x2 = min(x_mid + r1, width - 1)
         y1 = max(y_mid - r1, 0)
