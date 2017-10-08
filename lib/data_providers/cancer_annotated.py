@@ -39,6 +39,22 @@ class CancerAnnotated(DataProvider):
         next_id_index = (id_index + batch_size) % len(id_list)
         return batch_ids, next_id_index
 
+    @staticmethod
+    def _apply_margin(x1, y1, x2, y2, width, height, margin_size):
+        x_mid = (x1 + x2) / 2
+        y_mid = (y1 + y2) / 2
+        r1 = (x2 - x1) / 2 + margin_size
+        x1 = max(x_mid - r1, 0)
+        x2 = min(x_mid + r1, width - 1)
+        y1 = max(y_mid - r1, 0)
+        y2 = min(y_mid + r1, height - 1)
+        r2 = min(min(x_mid - x1, x2 - x_mid), min(y_mid - y1, y2 - y_mid))
+        x1 = x_mid - r2
+        x2 = x_mid + r2
+        y1 = y_mid - r2
+        y2 = y_mid + r2
+        return x1, y1, x2, y2
+
     def _crop_image(self, label, image_name, x1, y1, x2, y2):
         if label == 0:
             image_dir = 'benign tumour'
@@ -50,10 +66,7 @@ class CancerAnnotated(DataProvider):
         img = cv2.imread(image_path)
         img = img.astype(np.float32)
         height, width, _ = img.shape
-        x1 = max(x1-self._cfg.margin_size, 0)
-        y1 = max(y1-self._cfg.margin_size, 0)
-        x2 = min(x2+self._cfg.margin_size, width-1)
-        y2 = min(y2+self._cfg.margin_size, height-1)
+        x1, y1, x2, y2 = self._apply_margin(x1, y1, x2, y2, width, height, self._cfg.margin_size)
         img = img[y1: y2, x1: x2, :]
         img = cv2.resize(img, (self._cfg.resize_length, self._cfg.resize_length))
         img_mean = img.mean(axis=0).mean(axis=0)
