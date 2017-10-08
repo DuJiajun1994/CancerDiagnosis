@@ -49,8 +49,6 @@ class CancerAnnotated(DataProvider):
             'image {} is not existed'.format(image_path)
         img = cv2.imread(image_path)
         img = img.astype(np.float32)
-#img_mean = img.mean(axis=0).mean(axis=0)
-#img -= img_mean
         height, width, _ = img.shape
         x1 = max(x1-self._cfg.margin_size, 0)
         y1 = max(y1-self._cfg.margin_size, 0)
@@ -58,6 +56,8 @@ class CancerAnnotated(DataProvider):
         y2 = min(y2+self._cfg.margin_size, height-1)
         img = img[y1: y2, x1: x2, :]
         img = cv2.resize(img, (self._cfg.resize_length, self._cfg.resize_length))
+        img_mean = img.mean(axis=0).mean(axis=0)
+        img -= img_mean
         return img
 
     def _get_batch_data(self, df, batch_ids):
