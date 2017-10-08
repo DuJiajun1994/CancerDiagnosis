@@ -55,7 +55,11 @@ class CancerAnnotated(DataProvider):
         y2 = y_mid + r2
         return x1, y1, x2, y2
 
-    def _crop_image(self, label, image_name, x1, y1, x2, y2):
+    def _crop_image(self, label, image_name, x1, y1, x2, y2, phase):
+        if phase == 'train':
+            margin_size = random.randint(0, 100)
+        else:
+            margin_size = self._cfg.margin_size
         if label == 0:
             image_dir = 'benign tumour'
         else:
@@ -66,17 +70,17 @@ class CancerAnnotated(DataProvider):
         img = cv2.imread(image_path)
         img = img.astype(np.float32)
         height, width, _ = img.shape
-        x1, y1, x2, y2 = self._apply_margin(x1, y1, x2, y2, width, height, self._cfg.margin_size)
+        x1, y1, x2, y2 = self._apply_margin(x1, y1, x2, y2, width, height, margin_size)
         img = img[y1: y2, x1: x2, :]
         img = cv2.resize(img, (self._cfg.resize_length, self._cfg.resize_length))
         img_mean = img.mean(axis=0).mean(axis=0)
         img -= img_mean
         return img
 
-    def _get_batch_data(self, df, batch_ids):
+    def _get_batch_data(self, df, batch_ids, phase):
         batch_data = np.array([
             self._crop_image(df['label'][index_id], df['image_name'][index_id], df['x1'][index_id], df['y1'][index_id], \
-                             df['x2'][index_id], df['y2'][index_id])
+                             df['x2'][index_id], df['y2'][index_id], phase)
             for index_id in batch_ids
         ])
         batch_label = np.array([
@@ -90,9 +94,9 @@ class CancerAnnotated(DataProvider):
         batch_label = None
         if phase == 'train':
             batch_ids, self._train_index = self._get_batch_ids(self._train_list, self._train_index, batch_size)
-            batch_data, batch_label = self._get_batch_data(self._train_df, batch_ids)
+            batch_data, batch_label = self._get_batch_data(self._train_df, batch_ids, phase)
         elif phase == 'test':
             batch_ids, self._test_index = self._get_batch_ids(self._test_list, self._test_index, batch_size)
-            batch_data, batch_label = self._get_batch_data(self._test_df, batch_ids)
+            batch_data, batch_label = self._get_batch_data(self._test_df, batch_ids, phase)
         return batch_data, batch_label
 
