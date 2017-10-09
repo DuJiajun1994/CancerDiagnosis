@@ -12,7 +12,7 @@ slim = tf.contrib.slim
 from models.vgg16 import vgg16_base
 
 
-def build_model(model_name, inputs, num_classes=2, is_training=True, dropout_keep_prob=0.5):
+def build_model(model_name, inputs, num_classes, is_training, dropout_keep_prob):
     use_fcn = False
     if model_name.find('fcn') >= 0:
         use_fcn = True
@@ -42,7 +42,7 @@ def build_model(model_name, inputs, num_classes=2, is_training=True, dropout_kee
     return net
 
 
-def fully_connected_networks(net, num_classes=2, is_training=True, dropout_keep_prob=0.5):
+def fully_connected_networks(net, num_classes, is_training, dropout_keep_prob):
     # Use conv2d instead of fully_connected layers.
     net = layers.conv2d(net, 1024, net.get_shape()[1:3], padding='VALID')
     net = layers_lib.dropout(net, dropout_keep_prob, is_training=is_training)
@@ -53,7 +53,8 @@ def fully_connected_networks(net, num_classes=2, is_training=True, dropout_keep_
     net = tf.nn.softmax(net, name='predicts')
     return net
 
-def fully_convolutional_networks(net, num_classes=2, is_training=True, dropout_keep_prob=0.5):
+
+def fully_convolutional_networks(net, num_classes, is_training, dropout_keep_prob):
     # Not use fully connected layers.
     net = layers.conv2d(net, 1024, [1, 1])
     net = layers.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None)
