@@ -35,7 +35,7 @@ def test_model(data_name, cfg_name, trained_model_name):
         x = graph.get_tensor_by_name("x:0")
         y = graph.get_tensor_by_name("y:0")
         accuracy = graph.get_tensor_by_name("accuracy:0")
-        predicts = graph.get_tensor_by_name("vgg_16/predicts:0")
+        predicts = graph.get_tensor_by_name("not_pretrained/predicts:0")
 
         test_accuracy = 0.
         test_num = int(input_data.test_size / cfg.batch_size)
