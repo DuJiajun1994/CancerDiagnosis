@@ -57,7 +57,7 @@ class CancerAnnotated(DataProvider):
 
     def _crop_image(self, label, image_name, x1, y1, x2, y2, phase):
         if phase == 'train':
-            margin_size = random.randint(0, 100)
+            margin_size = random.randint(0, self._cfg.margin_size * 2)
         else:
             margin_size = self._cfg.margin_size
         if label == 0:
