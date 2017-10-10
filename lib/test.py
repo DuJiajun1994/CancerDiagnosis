@@ -34,6 +34,8 @@ def test_model(data_name, cfg_name, trained_model_name):
         graph = tf.get_default_graph()
         x = graph.get_tensor_by_name("x:0")
         y = graph.get_tensor_by_name("y:0")
+        is_training = graph.get_tensor_by_name("is_training:0")
+        dropout_keep_prob = graph.get_tensor_by_name("dropout_keep_prob:0")
         accuracy = graph.get_tensor_by_name("accuracy:0")
         predicts = graph.get_tensor_by_name("not_pretrained/predicts:0")
 
@@ -41,7 +43,10 @@ def test_model(data_name, cfg_name, trained_model_name):
         test_num = int(input_data.test_size / cfg.batch_size)
         for image_id in range(test_num):
             images, labels = input_data.next_batch(cfg.batch_size, 'test')
-            acc, pred = sess.run([accuracy, predicts], feed_dict={x: images, y: labels})
+            acc, pred = sess.run([accuracy, predicts], feed_dict={x: images,
+                                                                  y: labels,
+                                                                  is_training: False,
+                                                                  dropout_keep_prob: cfg.dropout_keep_prob})
             test_accuracy += acc
             for i in range(cfg.batch_size):
                 print('{} {} {}'.format(image_id, labels[i], pred[i][labels[i]]))
