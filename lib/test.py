@@ -9,7 +9,7 @@ print(sys.path)
 import tensorflow as tf
 import argparse
 import sys
-from data_provider import DataProvider
+from get_data_provider import get_data_provider
 from config_provider import get_config
 from paths import Paths
 
@@ -18,7 +18,7 @@ def test_model(data_name, cfg_name, trained_model_name):
     cfg = get_config(cfg_name)
     print('Config:')
     print(cfg)
-    input_data = DataProvider(data_name)
+    data_provider = get_data_provider(data_name, cfg)
 
     meta_path = os.path.join(Paths.output_path, '{}.meta'.format(trained_model_name))
     assert os.path.exists(meta_path), \
@@ -40,9 +40,9 @@ def test_model(data_name, cfg_name, trained_model_name):
         predicts = graph.get_tensor_by_name("not_pretrained/predicts:0")
 
         test_accuracy = 0.
-        test_num = int(input_data.test_size / cfg.batch_size)
+        test_num = int(data_provider.test_size / cfg.batch_size)
         for image_id in range(test_num):
-            images, labels = input_data.next_batch(cfg.batch_size, 'test')
+            images, labels = data_provider.next_batch(cfg.batch_size, 'test')
             acc, pred = sess.run([accuracy, predicts], feed_dict={x: images,
                                                                   y: labels,
                                                                   is_training: False,
