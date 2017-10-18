@@ -1,9 +1,11 @@
 train_iters: 100000
 test_step: 1000
 learning_rate: 0.001
+dropout_keep_prob: 0.5
 batch_size: 1 
 display_step: 100
 snapshot_step: 1000
 dir_name: 'all'
-margin_size: 0
+margin_size: 50 
 resize_length: 224
+

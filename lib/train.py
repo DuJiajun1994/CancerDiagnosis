@@ -54,8 +54,10 @@ def train_model(model_name, data_name, cfg_name):
 
     x = tf.placeholder(tf.float32, shape=[cfg.batch_size, cfg.resize_length, cfg.resize_length, 3], name='x')  # images
     y = tf.placeholder(tf.int64, shape=[cfg.batch_size], name='y')  # labels: 0, not cancer; 1, has cancer
+    is_training = tf.placeholder(tf.bool, name='is_training')
+    dropout_keep_prob = tf.placeholder(tf.float32, name='dropout_keep_prob')
     labels = tf.one_hot(y, depth=2, on_value=1., off_value=0., dtype=tf.float32)
-    predicts = build_model(model_name, x)
+    predicts = build_model(model_name, x, 2, is_training, dropout_keep_prob)
     loss = - tf.reduce_mean(tf.reduce_sum(labels * tf.log(predicts + 1e-10), 1))  # add 1e-10 to avoid log(0) = NaN
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=cfg.learning_rate).minimize(loss)
     correct_predict = tf.equal(tf.argmax(predicts, 1), y)
@@ -78,7 +80,10 @@ def train_model(model_name, data_name, cfg_name):
         for step in range(1, cfg.train_iters+1):
             images, labels = data_provider.next_batch(cfg.batch_size, 'train')
             batch_loss, _, batch_accuracy, batch_predict = sess.run([loss, optimizer, accuracy, predicts],
-                                                        feed_dict={x: images, y: labels})
+                                                        feed_dict={x: images,
+                                                                   y: labels,
+                                                                   is_training: True,
+                                                                   dropout_keep_prob: cfg.dropout_keep_prob})
             train_loss += batch_loss
             train_accuracy += batch_accuracy
             # Display training status
@@ -101,7 +106,10 @@ def train_model(model_name, data_name, cfg_name):
                 test_num = int(data_provider.test_size / cfg.batch_size)
                 for _ in range(test_num):
                     images, labels = data_provider.next_batch(cfg.batch_size, 'test')
-                    acc = sess.run(accuracy, feed_dict={x: images, y: labels})
+                    acc = sess.run(accuracy, feed_dict={x: images,
+                                                        y: labels,
+                                                        is_training: False,
+                                                        dropout_keep_prob: cfg.dropout_keep_prob})
                     test_accuracy += acc
                 test_accuracy /= test_num
                 print("{} Iter {}: Testing Accuracy = {:.4f}".format(datetime.now(), step, test_accuracy))
