@@ -49,7 +49,7 @@ def test_model(data_name, cfg_name, trained_model_name):
                                                                   dropout_keep_prob: cfg.dropout_keep_prob})
             test_accuracy += acc
             for i in range(cfg.batch_size):
-                print('{} {} {}'.format(image_id, labels[i], pred[i][labels[i]]))
+                print('{},{},{}'.format(image_id, labels[i], pred[i][1]))
         test_accuracy /= test_num
         print("Testing Accuracy = {:.4f}".format(test_accuracy))
         print('Finish!')
