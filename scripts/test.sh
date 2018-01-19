@@ -3,7 +3,8 @@
 # bash scripts/test.sh GPU_ID NET DATA CONFIG
 #
 # Example:
-# bash scripts/test.sh 0 400_vgg16_10000 400 cfg1
+# bash scripts/test.sh 0 cancer_not_annotated_vgg16_100000 cancer_not_annotated cfg1
+# bash scripts/test.sh 0 cancer_not_annotated_inception_v3_98000 cancer_not_annotated cfg2
 
 set -x
 set -e
